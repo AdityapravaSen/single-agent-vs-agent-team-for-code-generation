@@ -10,7 +10,7 @@ Running record of work done, decisions made and next steps. Newest entries at th
 
 | Phase | Description | Status |
 |---|---|---|
-| 0 | Project setup (docs, git, environment) | ✅ Done (HF access for gated models still pending) |
+| 0 | Project setup (docs, git, environment) | ✅ Done (only Llama 3.2 licence approval pending) |
 | 1 | Data loading and sandboxed test runner | ⚪ Not started |
 | 2 | Setup A end to end on 5 tasks | ⚪ Not started |
 | 3 | Setups B and C, plus logging | ⚪ Not started |
@@ -18,6 +18,14 @@ Running record of work done, decisions made and next steps. Newest entries at th
 | 5 | Analysis | ⚪ Not started |
 | 6 | Report | ⚪ Not started |
 | 7 | Wrap up and talk (deadline 16.12.2026) | ⚪ Not started |
+
+### Where to pick up next session
+- **Phase 1** (CPU only, on the laptop):
+  - `src/data.py`: load the sanitized test split and select tasks with a fixed seed → `data/tasks.json`
+  - `src/executor.py`: run code against a task's tests in a subprocess with a timeout
+  - `scripts/check_executor.py`: reference solutions must pass 100%; the wrong `remove_Occ` from the Colab test must fail
+- Before fixing the 20-task list, ask at the **Monday 09.11, 12:00** meeting: random 20 tasks or a specific selection? (plan.md §7)
+- Watch for the email from Meta about Llama 3.2 access, then check it with `.venv\Scripts\hf.exe download meta-llama/Llama-3.2-1B-Instruct config.json`
 
 ---
 
@@ -33,10 +41,10 @@ Running record of work done, decisions made and next steps. Newest entries at th
 - To confirm with the supervisor (plan.md §7, question 8)
 
 ### Done
-- `requirements.txt` with pinned versions: transformers 5.22.2, accelerate 1.15.0, datasets 5.1.0, numpy 2.5.4, pandas 3.1.1, scipy 1.18.1, matplotlib 3.11.2, tqdm 4.70.1, PyYAML 6.0.3. `torch` is left out on purpose (Colab has its own CUDA build)
+- `requirements.txt` with pinned versions: transformers 5.22.2, accelerate 1.15.0, datasets 5.1.0, numpy 2.5.4, pandas 3.1.1, scipy 1.18.1, matplotlib 3.11.2, tqdm 4.70.1, PyYAML 6.0.3. `torch` is left out on purpose (Colab has its own CUDA build). This was later split into two files (see "Fix" below)
 - Local `.venv`: Python 3.13.9 with torch 2.15.0 (CPU build)
 - `scripts/check_env.py`: prints Python and GPU info, loads MBPP, and optionally runs one test generation with the main model (memory, time, tokens/s)
-- `notebooks/colab_run.ipynb`: clone repo → install requirements → environment check
+- `notebooks/colab_run.ipynb`: clone repo → install requirements → load HF token from Colab secrets → environment check
 - README: new Setup section (Colab, local CPU, Hugging Face access); plan.md updated (D10, risks, folder structure, Phase 0 checklist)
 - Local check passed (`check_env.py --skip-model`): **MBPP sanitized test split has 257 tasks** (train 120, validation 43, prompt 7). First test task: #11 `remove_Occ`
 - Harmless warnings during the check: no HF token (only affects download rate limits); Windows has no symlink support for the HF cache (uses a bit more disk space)
@@ -71,7 +79,7 @@ Running record of work done, decisions made and next steps. Newest entries at th
   - Colab: `HF_TOKEN` secret, loaded into the environment by a notebook cell so `!python` scripts can use it
   - Gemma 3 1B-it licence accepted; **Llama 3.2 1B Instruct is waiting for Meta's approval**
 - [ ] Monday 09.11 meeting: open questions (plan.md §7)
-- [ ] Phase 1: `src/data.py` (task selection) and `src/executor.py` (sandboxed test runner)
+- [ ] Phase 1: `src/data.py` (task selection) and `src/executor.py` (sandboxed test runner); see "Where to pick up next session" above
 
 ---
 
@@ -85,9 +93,9 @@ Running record of work done, decisions made and next steps. Newest entries at th
 - Committed and pushed `README.md`, `plan.md`, `progress.md`, `.gitignore`
 
 ### Next steps
-- [ ] Set up the Python environment and `requirements.txt`
-- [ ] Take the open questions (plan.md §7) to the Monday 09.11 meeting
-- [ ] Start Phase 1: data loader and sandboxed test runner
+- [x] Set up the Python environment and `requirements.txt` (see the entry above)
+- [ ] Take the open questions (plan.md §7) to the Monday 09.11 meeting (carried forward)
+- [ ] Start Phase 1: data loader and sandboxed test runner (carried forward)
 
 ---
 

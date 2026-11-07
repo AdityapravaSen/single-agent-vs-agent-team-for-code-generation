@@ -60,7 +60,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 
 | # | Decision | Proposal | Reason |
 |---|---|---|---|
-| D1 | Dataset config | `sanitized`, test split | Clearer task descriptions, so fewer failures caused by vague wording |
+| D1 | Dataset config | `sanitized`, test split (257 tasks) | Clearer task descriptions, so fewer failures caused by vague wording |
 | D2 | Task selection | 20 tasks drawn at random from the test split with a fixed seed; save the list to `data/tasks.json` | Reproducible, no cherry-picking |
 | D3 | Tests in prompt | Show the test asserts in the prompt, as the original paper does | The model needs the exact function name and signature the tests call |
 | D4 | Few-shot | Zero-shot with a fixed output format (one ```python block); same instructions in all setups | Keeps the setups comparable; small instruct models follow chat formats well |
@@ -82,7 +82,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 - [x] Python environment: `requirements.txt`, local `.venv` (CPU), `scripts/check_env.py`
 - [x] Colab notebook: `notebooks/colab_run.ipynb` (clone → install → environment check)
 - [x] Run the Colab notebook once on a T4 and record GPU, memory and generation speed (T4, 2.89 GB, ~20–23 tok/s)
-- [ ] Hugging Face account and token; request access to Llama 3.2 and Gemma 3 (gated)
+- [x] Hugging Face account and token (local `hf auth login`, Colab `HF_TOKEN` secret); Gemma 3 accepted, **Llama 3.2 waiting for approval**
 
 ### Phase 1: Data and test runner (Week 1)
 - [ ] `src/data.py`: load MBPP and select 20 tasks with a fixed seed (D1, D2); start with 5 tasks for development
@@ -93,7 +93,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 
 ### Phase 2: Setup A, end to end (Week 1 → early Week 2)
 - [ ] `src/model.py`: load the model and tokenizer, generate with a chat template, count tokens, time each call (with `torch.cuda.synchronize()`)
-- [ ] `src/extract.py`: pull code out of the model's answer (```python block, falling back to raw text)
+- [ ] `src/extract.py`: pull code out of the model's answer (```python block, falling back to raw text). The first Colab test showed the model adds an explanation after the code
 - [ ] `src/setups/single.py`: Setup A
 - [ ] Run A on 5 tasks and check the output by hand
 
@@ -113,7 +113,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 **Milestone, Monday 16.11:** all three setups run and log correctly.
 
 ### Phase 4: Full experiment (Week 3: 16.11–22.11)
-- [ ] Main run: **3 setups × 20 tasks × 3 runs = 180 episodes** (≈ 300 model calls)
+- [ ] Main run: **3 setups × 20 tasks × 3 runs = 180 episodes** (≈ 240 model calls: A and B make 1 per episode, C makes 2; about 60 min on a T4)
 - [ ] Freeze the code and prompts before the run; record the git commit hash, library versions and GPU type in the results
 - [ ] Optional, if time allows: repeat with a second model from the list
 

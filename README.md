@@ -6,6 +6,8 @@ Student project, ML Group RPTU Kaiserslautern (AI software engineering), supervi
 
 Multi-agent setups are popular, and they use more tokens. This project tests whether splitting the work across roles (a *planner* and a *coder*) improves code generation, or whether a single agent that plans first does just as well.
 
+**Status (07.11.2026):** Phase 0 is done: repo, environment and the Colab GPU setup are verified. Next is Phase 1: data loader and sandboxed test runner. See [progress.md](progress.md).
+
 ---
 
 ## Experimental setups
@@ -54,18 +56,21 @@ Candidates (small, instruction-tuned):
 - Llama 3.2 1B Instruct
 - Gemma 3 1B-it
 
-## Repository structure (planned)
+## Repository structure
 
 ```
-configs/      experiment configs
-data/         selected task IDs
-prompts/      prompt templates for each setup and role
-src/          data loading, model wrapper, code extraction, sandboxed test runner, setups A/B/C
-results/      raw JSONL logs
-analysis/     tables, plots, statistics
-notebooks/    Colab notebook for GPU runs
-scripts/      helper scripts (environment check, ...)
-report/       report and slides
+notebooks/                  Colab notebook for GPU runs              (exists)
+scripts/                    helper scripts, e.g. check_env.py        (exists)
+requirements.txt            generation packages (Colab + local)      (exists)
+requirements-analysis.txt   analysis packages (local only)           (exists)
+configs/                    experiment configs                       (planned)
+data/                       selected task IDs                        (planned)
+prompts/                    prompt templates for each setup and role (planned)
+src/                        data loading, model wrapper, code extraction,
+                            sandboxed test runner, setups A/B/C      (planned)
+results/                    raw JSONL logs                           (planned)
+analysis/                   tables, plots, statistics                (planned)
+report/                     report and slides                        (planned)
 ```
 
 ## Setup
@@ -75,7 +80,10 @@ report/       report and slides
 ### Google Colab (GPU runs)
 1. Open [notebooks/colab_run.ipynb](notebooks/colab_run.ipynb) in Colab (*File → Open notebook → GitHub*, paste the repo URL).
 2. *Runtime → Change runtime type → T4 GPU*.
-3. Run all cells. The notebook clones this repo, installs `requirements.txt` and runs the environment check.
+3. Optional: add a Hugging Face token as a secret (see below).
+4. *Runtime → Run all*. The notebook clones this repo, installs `requirements.txt`, loads the token and runs the environment check. The last line should be `Environment OK`.
+
+Edits made inside Colab are **not** saved back to GitHub. Change the notebook in the repo, push, then re-open it in Colab.
 
 ### Local (development, CPU)
 ```bash
@@ -93,7 +101,14 @@ There are two requirements files:
 - `requirements-analysis.txt`: analysis packages, pinned, **local only**. Installing these on Colab breaks its built-in packages.
 
 ### Hugging Face access
-The Qwen models are public. Llama 3.2 and Gemma 3 are *gated*: request access on their model pages, then log in with a token (`huggingface-cli login` locally, or the `HF_TOKEN` secret in Colab).
+The Qwen models are public and need no token. Llama 3.2 and Gemma 3 are *gated*:
+1. Create a **Read** token at huggingface.co → *Settings → Access Tokens*.
+2. Accept the licences on the model pages ([Llama 3.2 1B Instruct](https://huggingface.co/meta-llama/Llama-3.2-1B-Instruct), [Gemma 3 1B-it](https://huggingface.co/google/gemma-3-1b-it)). Check the status under *Settings → Gated Repositories*.
+3. Log in:
+   - **Locally:** `hf auth login`. The token is saved in the Hugging Face cache, not in the repo. Check with `hf auth whoami`.
+   - **Colab:** 🔑 *Secrets* → add `HF_TOKEN` with *Notebook access* on. The notebook loads it automatically.
+
+Never put the token in a repo file.
 
 ## Running the experiment
 
