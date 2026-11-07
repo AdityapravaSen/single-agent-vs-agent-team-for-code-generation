@@ -63,21 +63,42 @@ prompts/      prompt templates for each setup and role
 src/          data loading, model wrapper, code extraction, sandboxed test runner, setups A/B/C
 results/      raw JSONL logs
 analysis/     tables, plots, statistics
-slurm/        job scripts for the Elwetritsch cluster
+notebooks/    Colab notebook for GPU runs
+scripts/      helper scripts (environment check, ...)
 report/       report and slides
 ```
 
-## Getting started
+## Setup
 
-> Work in progress. Install and run instructions will be added once the code exists.
+**Compute:** all GPU runs happen on **Google Colab (free T4)**. The Elwetritsch cluster is a backup option only. Local machines handle development and CPU-only work.
 
+### Google Colab (GPU runs)
+1. Open [notebooks/colab_run.ipynb](notebooks/colab_run.ipynb) in Colab (*File → Open notebook → GitHub*, paste the repo URL).
+2. *Runtime → Change runtime type → T4 GPU*.
+3. Run all cells. The notebook clones this repo, installs `requirements.txt` and runs the environment check.
+
+### Local (development, CPU)
 ```bash
-# planned
+python -m venv .venv
+# Windows:  .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+pip install torch                 # CPU build; see pytorch.org for a CUDA build
 pip install -r requirements.txt
-python run_experiment.py --setups A B C --tasks data/tasks.json --runs 3 --model Qwen/Qwen2.5-Coder-1.5B-Instruct
+python scripts/check_env.py --skip-model   # checks Python, torch, MBPP loading
 ```
 
-**Compute:** the Elwetritsch cluster (V100) or free Google Colab.
+`requirements.txt` leaves out `torch` on purpose: Colab ships its own CUDA build, and local machines need the build that fits their hardware.
+
+### Hugging Face access
+The Qwen models are public. Llama 3.2 and Gemma 3 are *gated*: request access on their model pages, then log in with a token (`huggingface-cli login` locally, or the `HF_TOKEN` secret in Colab).
+
+## Running the experiment
+
+> Work in progress. Planned interface:
+
+```bash
+python run_experiment.py --setups A B C --tasks data/tasks.json --runs 3 --model Qwen/Qwen2.5-Coder-1.5B-Instruct
+```
 
 > ⚠️ This project runs model-generated code. It always runs in a subprocess with a timeout. Do not run it outside the provided sandboxed runner.
 

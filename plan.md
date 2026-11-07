@@ -50,7 +50,9 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
   2. Qwen3-0.6B
   3. Llama 3.2 1B Instruct (gated on Hugging Face; needs licence approval)
   4. Gemma 3 1B-it (gated on Hugging Face; needs licence approval)
-- **Compute:** Elwetritsch cluster (V100 GPUs, SLURM) or free Google Colab (T4)
+- **Compute:** **Google Colab (free T4 GPU)** is the main platform (see D10). The Elwetritsch cluster (V100) is a backup only
+  - Estimated workload: about 240 model calls (A and B make 1 call per task-run, C makes 2), roughly 30–60 minutes on a T4 for one model
+  - Local laptop (RTX 3050, 4 GB): development and CPU-only work (data loader, test runner)
 
 ---
 
@@ -67,6 +69,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 | D7 | Setup B vs. C | Same planning instructions for B's plan section and C's Planner; the only difference is one call vs. two calls with separate role prompts | Isolates the effect of the team from the effect of planning (RQ2) |
 | D8 | Main model | Qwen2.5-Coder-1.5B-Instruct for the main experiment; other models only if time allows | Six-week time box |
 | D9 | Sandbox | Each solution runs in its own subprocess with a timeout (e.g. 10 s) in a temp directory | The dataset card warns against running generated code unsafely; also catches infinite loops |
+| D10 | Compute | Google Colab T4 for every GPU run; models in **fp16** (T4 has no bf16); log the GPU name with each result; the full main experiment runs in **one session** on one GPU type; resumable runs; results saved to Google Drive, then copied into the repo | The workload is small enough for Colab. Using the same hardware for all setups keeps GPU time comparable. Avoids the Elwetritsch account and SLURM overhead |
 
 ---
 
@@ -76,8 +79,10 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 - [x] Read the kickoff slides, the dataset card and the original repo
 - [x] Draft `plan.md`, `README.md`, `progress.md`
 - [x] Initialise the git repo, add `.gitignore`, push to GitHub
-- [ ] Python environment (`requirements.txt`: `transformers`, `datasets`, `torch`, `accelerate`, `pandas`, `matplotlib`, `scipy`)
-- [ ] Check GPU access (Colab and/or Elwetritsch account)
+- [x] Python environment: `requirements.txt`, local `.venv` (CPU), `scripts/check_env.py`
+- [x] Colab notebook: `notebooks/colab_run.ipynb` (clone → install → environment check)
+- [ ] Run the Colab notebook once on a T4 and record GPU, memory and generation speed
+- [ ] Hugging Face account and token; request access to Llama 3.2 and Gemma 3 (gated)
 
 ### Phase 1: Data and test runner (Week 1)
 - [ ] `src/data.py`: load MBPP and select 20 tasks with a fixed seed (D1, D2); start with 5 tasks for development
@@ -160,7 +165,8 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 ├── run_experiment.py
 ├── results/              # raw JSONL logs (large files possibly git-ignored)
 ├── analysis/             # notebooks and scripts → tables and plots
-├── slurm/                # Elwetritsch job scripts
+├── notebooks/            # Colab notebook(s) for GPU runs
+├── scripts/              # helper scripts (e.g. check_env.py)
 └── report/               # report source, figures, slides
 ```
 
@@ -174,7 +180,10 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 | Wrong function name, so the asserts fail | Show the tests in the prompt (D3) |
 | The plan uses up the token budget in B | Generous `max_new_tokens`; log truncation |
 | 20 tasks are too few for significant results | Report CIs and effect sizes; mention as a limitation; ask whether more tasks are allowed |
-| Colab session limits or GPU queue waits | Resumable runs; checkpoint after each episode |
+| Colab disconnects (idle or time limits) | Resumable runs: write each finished episode to disk and skip finished ones on restart |
+| Colab files are lost when the session ends | Write results to Google Drive; copy them into the repo afterwards |
+| Colab assigns a different GPU, or the free quota runs out | Log the GPU name with every result; run the main experiment in one session; develop on CPU and keep Colab for real runs; Elwetritsch as a backup |
+| Shared hardware makes timings noisy | Token counts are the main cost metric, GPU time secondary; mention as a limitation |
 | Gated models (Llama, Gemma) need licence approval | Request access early, or stick with the Qwen models |
 | Generated code is harmful or hangs | Subprocess sandbox with timeout (D9) |
 
@@ -189,3 +198,4 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 5. How should GPU time be measured and reported (generation time only, or GPU-seconds including model loading)?
 6. Report format: a LaTeX template, or free form?
 7. Can we use more than 20 tasks if compute allows?
+8. Is running everything on Google Colab (T4) fine, or is Elwetritsch expected?

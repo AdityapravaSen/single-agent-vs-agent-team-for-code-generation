@@ -21,21 +21,31 @@ Running record of work done, decisions made and next steps. Newest entries at th
 
 ---
 
-## 2026-11-07 (Sat): Remove Claude co-author attribution
+## 2026-11-07 (Sat): Compute decision and environment setup
 
-### Problem
-- The first commit (`7e94012`) ended with a `Co-Authored-By: Claude` line, so GitHub listed Claude as a contributor.
+### Decisions
+- **Google Colab (free T4) is the only GPU platform** (plan.md D10). The Elwetritsch cluster is a backup. Reasons:
+  - The workload is small: about 240 model calls, roughly 30–60 minutes for one model on a T4
+  - The kickoff slides allow either platform ("Elwetritsch V100s or free Google Colab")
+  - It avoids the cluster account, SLURM and queue waits
+- Models load in **fp16** (T4 has no bf16); every result logs the GPU name; the main experiment runs in one session; runs can resume; results go to Google Drive
+- Local laptop (RTX 3050, 4 GB) is for development and CPU-only work
+- To confirm with the supervisor (plan.md §7, question 8)
 
 ### Done
-- Turned off Claude attribution in commits and PRs globally (`attribution` in `~/.claude/settings.json`)
-- Saved a rule in Claude's memory never to add attribution lines in this project
-- [x] Rewrote commit `7e94012` → `2ce26fc` without the co-author line and force-pushed it. The user ran this by hand because Claude Code's safety check blocked it. Verified: the remote history now names only Adityaprava Sen
+- `requirements.txt` with pinned versions: transformers 5.22.2, accelerate 1.15.0, datasets 5.1.0, numpy 2.5.4, pandas 3.1.1, scipy 1.18.1, matplotlib 3.11.2, tqdm 4.70.1, PyYAML 6.0.3. `torch` is left out on purpose (Colab has its own CUDA build)
+- Local `.venv`: Python 3.13.9 with torch 2.15.0 (CPU build)
+- `scripts/check_env.py`: prints Python and GPU info, loads MBPP, and optionally runs one test generation with the main model (memory, time, tokens/s)
+- `notebooks/colab_run.ipynb`: clone repo → install requirements → environment check
+- README: new Setup section (Colab, local CPU, Hugging Face access); plan.md updated (D10, risks, folder structure, Phase 0 checklist)
+- Local check passed (`check_env.py --skip-model`): **MBPP sanitized test split has 257 tasks** (train 120, validation 43, prompt 7). First test task: #11 `remove_Occ`
+- Harmless warnings during the check: no HF token (only affects download rate limits); Windows has no symlink support for the HF cache (uses a bit more disk space)
 
-### Commands used
-```bash
-git commit --amend -m "Add project plan, README, progress log and .gitignore"
-git push --force-with-lease origin main
-```
+### Next steps
+- [ ] Run `notebooks/colab_run.ipynb` on a T4 and record GPU memory and tokens/s for Qwen2.5-Coder-1.5B
+- [ ] Hugging Face account and token; request access to Llama 3.2 and Gemma 3
+- [ ] Monday 09.11 meeting: open questions (plan.md §7)
+- [ ] Phase 1: `src/data.py` (task selection) and `src/executor.py` (sandboxed test runner)
 
 ---
 
