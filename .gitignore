@@ -1,0 +1,39 @@
+# Course material (not redistributed)
+kickoff_rptu_1.pdf
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Model / dataset caches
+.cache/
+hf_cache/
+*.safetensors
+*.bin
+
+# Large raw logs (summaries are committed; decide per file)
+results/raw/
+
+# SLURM output
+slurm-*.out
+
+# Environment / secrets
+.env
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
