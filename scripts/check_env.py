@@ -43,7 +43,7 @@ def check_model(model_name, task):
     dtype = torch.float16 if device == "cuda" else torch.float32  # T4/V100 have no bf16
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=dtype).to(device)
+    model = AutoModelForCausalLM.from_pretrained(model_name, dtype=dtype).to(device)
 
     prompt = f"{task['prompt']}\nYour code should pass this test:\n{task['test_list'][0]}"
     messages = [{"role": "user", "content": prompt}]

@@ -82,12 +82,15 @@ report/       report and slides
 python -m venv .venv
 # Windows:  .venv\Scripts\activate
 # macOS/Linux: source .venv/bin/activate
-pip install torch                 # CPU build; see pytorch.org for a CUDA build
-pip install -r requirements.txt
+pip install torch                          # CPU build; see pytorch.org for a CUDA build
+pip install -r requirements.txt            # generation packages
+pip install -r requirements-analysis.txt   # numpy, pandas, scipy, matplotlib
 python scripts/check_env.py --skip-model   # checks Python, torch, MBPP loading
 ```
 
-`requirements.txt` leaves out `torch` on purpose: Colab ships its own CUDA build, and local machines need the build that fits their hardware.
+There are two requirements files:
+- `requirements.txt`: what generation runs need. Both Colab and local machines install it. It leaves out `torch` (Colab ships its own CUDA build) and does not pin numpy or pandas, so Colab's preinstalled packages stay intact.
+- `requirements-analysis.txt`: analysis packages, pinned, **local only**. Installing these on Colab breaks its built-in packages.
 
 ### Hugging Face access
 The Qwen models are public. Llama 3.2 and Gemma 3 are *gated*: request access on their model pages, then log in with a token (`huggingface-cli login` locally, or the `HF_TOKEN` secret in Colab).
