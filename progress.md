@@ -21,6 +21,24 @@ Running record of work done, decisions made and next steps. Newest entries at th
 
 ---
 
+## 2026-11-07 (Sat): Remove Claude co-author attribution
+
+### Problem
+- The first commit (`7e94012`) ended with a `Co-Authored-By: Claude` line, so GitHub listed Claude as a contributor.
+
+### Done
+- Turned off Claude attribution in commits and PRs globally (`attribution` in `~/.claude/settings.json`)
+- Saved a rule in Claude's memory never to add attribution lines in this project
+- [x] Rewrote commit `7e94012` → `2ce26fc` without the co-author line and force-pushed it. The user ran this by hand because Claude Code's safety check blocked it. Verified: the remote history now names only Adityaprava Sen
+
+### Commands used
+```bash
+git commit --amend -m "Add project plan, README, progress log and .gitignore"
+git push --force-with-lease origin main
+```
+
+---
+
 ## 2026-11-07 (Sat): Git repository setup
 
 ### Done
