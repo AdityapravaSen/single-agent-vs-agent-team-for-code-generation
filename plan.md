@@ -81,7 +81,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 - [x] Initialise the git repo, add `.gitignore`, push to GitHub
 - [x] Python environment: `requirements.txt`, local `.venv` (CPU), `scripts/check_env.py`
 - [x] Colab notebook: `notebooks/colab_run.ipynb` (clone → install → environment check)
-- [ ] Run the Colab notebook once on a T4 and record GPU, memory and generation speed
+- [x] Run the Colab notebook once on a T4 and record GPU, memory and generation speed (T4, 2.89 GB, ~20–23 tok/s)
 - [ ] Hugging Face account and token; request access to Llama 3.2 and Gemma 3 (gated)
 
 ### Phase 1: Data and test runner (Week 1)

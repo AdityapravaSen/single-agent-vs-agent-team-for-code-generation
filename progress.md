@@ -10,7 +10,7 @@ Running record of work done, decisions made and next steps. Newest entries at th
 
 | Phase | Description | Status |
 |---|---|---|
-| 0 | Project setup (docs, git, environment) | 🟡 In progress |
+| 0 | Project setup (docs, git, environment) | ✅ Done (HF access for gated models still pending) |
 | 1 | Data loading and sandboxed test runner | ⚪ Not started |
 | 2 | Setup A end to end on 5 tasks | ⚪ Not started |
 | 3 | Setups B and C, plus logging | ⚪ Not started |
@@ -63,8 +63,13 @@ Running record of work done, decisions made and next steps. Newest entries at th
 
 ### Next steps
 - [x] Run `notebooks/colab_run.ipynb` on a T4 and record GPU memory and tokens/s for Qwen2.5-Coder-1.5B
-- [ ] Re-run the notebook on a fresh Colab runtime and confirm the install shows no conflicts
-- [ ] Hugging Face account and token; request access to Llama 3.2 and Gemma 3
+- [x] Re-run the notebook on a fresh Colab runtime and confirm the install shows no conflicts
+  - Verified: only `cudf` vs `pyarrow` remains (harmless; we don't use cudf). The pandas, numpy and bottleneck conflicts and the `torch_dtype` warning are gone
+  - 23.1 tokens/s, peak memory 2.89 GB; the same answer as the first run (greedy decoding is deterministic)
+- [x] Hugging Face account and token
+  - Locally: token stored with `hf auth login` (in the user's HF cache, not in the repo)
+  - Colab: `HF_TOKEN` secret, loaded into the environment by a notebook cell so `!python` scripts can use it
+  - Gemma 3 1B-it licence accepted; **Llama 3.2 1B Instruct is waiting for Meta's approval**
 - [ ] Monday 09.11 meeting: open questions (plan.md §7)
 - [ ] Phase 1: `src/data.py` (task selection) and `src/executor.py` (sandboxed test runner)
 
