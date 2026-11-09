@@ -10,7 +10,7 @@ Running record of work done, decisions made and next steps. Newest entries at th
 
 | Phase | Description | Status |
 |---|---|---|
-| 0 | Project setup (docs, git, environment) | ✅ Done (only Llama 3.2 licence approval pending) |
+| 0 | Project setup (docs, git, environment) | ✅ Done |
 | 1 | Data loading and sandboxed test runner | ⚪ Not started |
 | 2 | Setup A end to end on 5 tasks | ⚪ Not started |
 | 3 | Setups B and C, plus logging | ⚪ Not started |
@@ -24,8 +24,25 @@ Running record of work done, decisions made and next steps. Newest entries at th
   - `src/data.py`: load the sanitized test split and select tasks with a fixed seed → `data/tasks.json`
   - `src/executor.py`: run code against a task's tests in a subprocess with a timeout
   - `scripts/check_executor.py`: reference solutions must pass 100%; the wrong `remove_Occ` from the Colab test must fail
-- Before fixing the 20-task list, ask at the **Monday 09.11, 12:00** meeting: random 20 tasks or a specific selection? (plan.md §7)
-- Watch for the email from Meta about Llama 3.2 access, then check it with `.venv\Scripts\hf.exe download meta-llama/Llama-3.2-1B-Instruct config.json`
+- The schedule is behind: the Week 1 milestone (Setup A on 5 tasks by 09.11) is not reached. Phases 1–2 need to happen this week, alongside Phase 3
+
+---
+
+## 2026-11-09 (Mon): Supervisor meeting
+
+### Answers (plan.md §7)
+- **Q1 Dataset → sanitized MBPP** ✅ (D1 confirmed). The task selection method was not discussed, so we keep the random draw of 20 with a fixed seed (D2)
+- **Q2 Models → one main model; comparing other models is optional** ✅ (D8 confirmed)
+  - Main experiment: Qwen2.5-Coder-1.5B-Instruct
+  - Optional extension if time allows: Llama 3.2 1B, Gemma 3 1B, Qwen3-0.6B (about 1 h of Colab each)
+  - Consequence for the code: `src/model.py` takes the model name as a parameter and handles Qwen3's thinking mode and Gemma's missing system role, so the extension needs no code changes
+- **Q8 Compute → Colab is fine** ✅. The supervisor will provide RPTU GPU access; using it is optional (D10 confirmed)
+
+### Other updates
+- Hugging Face gated access **accepted for both Llama 3.2 and Gemma 3** (07.11)
+
+### Still open (plan.md §7)
+- Q3 sampling vs. greedy · Q4 tests in the prompt · Q5 GPU time measurement · Q6 report format · Q7 more than 20 tasks
 
 ---
 

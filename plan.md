@@ -50,26 +50,28 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
   2. Qwen3-0.6B
   3. Llama 3.2 1B Instruct (gated on Hugging Face; needs licence approval)
   4. Gemma 3 1B-it (gated on Hugging Face; needs licence approval)
-- **Compute:** **Google Colab (free T4 GPU)** is the main platform (see D10). The Elwetritsch cluster (V100) is a backup only
+- **Compute:** **Google Colab (free T4 GPU)** is the main platform (see D10). The supervisor will provide RPTU GPU access (e.g. Elwetritsch V100); using it is optional
   - Estimated workload: about 240 model calls (A and B make 1 call per task-run, C makes 2), roughly 30–60 minutes on a T4 for one model
   - Local laptop (RTX 3050, 4 GB): development and CPU-only work (data loader, test runner)
 
 ---
 
-## 3. Design decisions (proposed; confirm with supervisor)
+## 3. Design decisions
+
+✅ = confirmed by the supervisor (meeting 09.11.2026). All others are still proposals.
 
 | # | Decision | Proposal | Reason |
 |---|---|---|---|
-| D1 | Dataset config | `sanitized`, test split (257 tasks) | Clearer task descriptions, so fewer failures caused by vague wording |
+| D1 ✅ | Dataset config | `sanitized`, test split (257 tasks) | Clearer task descriptions, so fewer failures caused by vague wording |
 | D2 | Task selection | 20 tasks drawn at random from the test split with a fixed seed; save the list to `data/tasks.json` | Reproducible, no cherry-picking |
 | D3 | Tests in prompt | Show the test asserts in the prompt, as the original paper does | The model needs the exact function name and signature the tests call |
 | D4 | Few-shot | Zero-shot with a fixed output format (one ```python block); same instructions in all setups | Keeps the setups comparable; small instruct models follow chat formats well |
 | D5 | Decoding | Sampling (e.g. temperature 0.7, top-p 0.95) with seeds 0, 1, 2 for the 3 runs | Greedy decoding would make all 3 runs identical, so we could not measure variance |
 | D6 | Token budget | Same `max_new_tokens` per call across setups; log every call | Fair cost comparison |
 | D7 | Setup B vs. C | Same planning instructions for B's plan section and C's Planner; the only difference is one call vs. two calls with separate role prompts | Isolates the effect of the team from the effect of planning (RQ2) |
-| D8 | Main model | Qwen2.5-Coder-1.5B-Instruct for the main experiment; other models only if time allows | Six-week time box |
+| D8 ✅ | Main model | **Qwen2.5-Coder-1.5B-Instruct** for the main experiment. Optional extension if time allows: the same experiment with Llama 3.2 1B Instruct, Gemma 3 1B-it and Qwen3-0.6B, then compare across models. `src/model.py` takes the model name as a parameter, so the extension needs no code changes | The supervisor wants one main model; comparing models is optional. Six-week time box |
 | D9 | Sandbox | Each solution runs in its own subprocess with a timeout (e.g. 10 s) in a temp directory | The dataset card warns against running generated code unsafely; also catches infinite loops |
-| D10 | Compute | Google Colab T4 for every GPU run; models in **fp16** (T4 has no bf16); log the GPU name with each result; the full main experiment runs in **one session** on one GPU type; resumable runs; results saved to Google Drive, then copied into the repo | The workload is small enough for Colab. Using the same hardware for all setups keeps GPU time comparable. Avoids the Elwetritsch account and SLURM overhead |
+| D10 ✅ | Compute | Google Colab T4 for every GPU run (the supervisor will also provide RPTU GPU access; using it is optional); models in **fp16** (T4 has no bf16); log the GPU name with each result; the full main experiment runs in **one session** on one GPU type; resumable runs; results saved to Google Drive, then copied into the repo | The workload is small enough for Colab. Using the same hardware for all setups keeps GPU time comparable. Avoids the Elwetritsch account and SLURM overhead |
 
 ---
 
@@ -82,7 +84,7 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 - [x] Python environment: `requirements.txt`, local `.venv` (CPU), `scripts/check_env.py`
 - [x] Colab notebook: `notebooks/colab_run.ipynb` (clone → install → environment check)
 - [x] Run the Colab notebook once on a T4 and record GPU, memory and generation speed (T4, 2.89 GB, ~20–23 tok/s)
-- [x] Hugging Face account and token (local `hf auth login`, Colab `HF_TOKEN` secret); Gemma 3 accepted, **Llama 3.2 waiting for approval**
+- [x] Hugging Face account and token (local `hf auth login`, Colab `HF_TOKEN` secret); Gemma 3 and Llama 3.2 access accepted (07.11)
 
 ### Phase 1: Data and test runner (Week 1)
 - [ ] `src/data.py`: load MBPP and select 20 tasks with a fixed seed (D1, D2); start with 5 tasks for development
@@ -93,6 +95,8 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 
 ### Phase 2: Setup A, end to end (Week 1 → early Week 2)
 - [ ] `src/model.py`: load the model and tokenizer, generate with a chat template, count tokens, time each call (with `torch.cuda.synchronize()`)
+  - Model name is a parameter (D8), so the optional models need no code changes
+  - Handle model differences: Qwen3 thinking mode off (`enable_thinking=False`); Gemma 3 has no system role, so instructions go into the user message
 - [ ] `src/extract.py`: pull code out of the model's answer (```python block, falling back to raw text). The first Colab test showed the model adds an explanation after the code
 - [ ] `src/setups/single.py`: Setup A
 - [ ] Run A on 5 tasks and check the output by hand
@@ -115,7 +119,8 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 ### Phase 4: Full experiment (Week 3: 16.11–22.11)
 - [ ] Main run: **3 setups × 20 tasks × 3 runs = 180 episodes** (≈ 240 model calls: A and B make 1 per episode, C makes 2; about 60 min on a T4)
 - [ ] Freeze the code and prompts before the run; record the git commit hash, library versions and GPU type in the results
-- [ ] Optional, if time allows: repeat with a second model from the list
+- [ ] Optional extension (D8), only after the main run is complete: the same experiment with Llama 3.2 1B, Gemma 3 1B and Qwen3-0.6B, about 1 h of Colab each, with the same frozen code and prompts
+  - Extra analysis: does the team effect (C vs. A, C vs. B) hold across models?
 
 **Milestone, Monday 23.11:** raw results complete.
 
@@ -182,20 +187,24 @@ Grading is fully automatic: the generated code runs against MBPP's own tests. Af
 | 20 tasks are too few for significant results | Report CIs and effect sizes; mention as a limitation; ask whether more tasks are allowed |
 | Colab disconnects (idle or time limits) | Resumable runs: write each finished episode to disk and skip finished ones on restart |
 | Colab files are lost when the session ends | Write results to Google Drive; copy them into the repo afterwards |
-| Colab assigns a different GPU, or the free quota runs out | Log the GPU name with every result; run the main experiment in one session; develop on CPU and keep Colab for real runs; Elwetritsch as a backup |
+| Colab assigns a different GPU, or the free quota runs out | Log the GPU name with every result; run the main experiment in one session; develop on CPU and keep Colab for real runs; RPTU GPU access (provided by the supervisor) as a backup |
 | Shared hardware makes timings noisy | Token counts are the main cost metric, GPU time secondary; mention as a limitation |
-| Gated models (Llama, Gemma) need licence approval | Request access early, or stick with the Qwen models |
+| Gated models (Llama, Gemma) need licence approval | Resolved: access accepted on 07.11 |
+| Optional models use different chat formats (Qwen3 thinking mode, Gemma without system role) | Handle these in `src/model.py`; check one generation per model before the full run |
+| A weak model (e.g. Qwen3-0.6B) solves almost nothing | Report it as is: a floor effect means no setup differences can show; mention in the report |
 | Generated code is harmful or hangs | Subprocess sandbox with timeout (D9) |
 
 ---
 
 ## 7. Open questions for the supervisor (Monday meeting)
 
-1. `sanitized` or `full` MBPP config? Random 20 tasks, or a particular selection?
-2. One main model, or should all four candidate models be compared?
+Answered on 09.11.2026: 1 (partly), 2, 8.
+
+1. `sanitized` or `full` MBPP config? **→ sanitized ✅.** Random 20 tasks, or a particular selection? *(not answered; keep the random draw with a fixed seed)*
+2. One main model, or should all four candidate models be compared? **→ One main model; other models optional ✅**
 3. Sampling with temperature (needed for run-to-run variance), or greedy decoding?
 4. Is showing the test asserts in the prompt acceptable (it is the original paper's format)?
 5. How should GPU time be measured and reported (generation time only, or GPU-seconds including model loading)?
 6. Report format: a LaTeX template, or free form?
 7. Can we use more than 20 tasks if compute allows?
-8. Is running everything on Google Colab (T4) fine, or is Elwetritsch expected?
+8. Is running everything on Google Colab (T4) fine, or is Elwetritsch expected? **→ Colab is fine. The supervisor will provide RPTU GPU access; using it is optional ✅**

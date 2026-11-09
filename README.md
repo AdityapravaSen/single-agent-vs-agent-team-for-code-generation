@@ -75,7 +75,7 @@ report/                     report and slides                        (planned)
 
 ## Setup
 
-**Compute:** all GPU runs happen on **Google Colab (free T4)**. The Elwetritsch cluster is a backup option only. Local machines handle development and CPU-only work.
+**Compute:** all GPU runs happen on **Google Colab (free T4)**. RPTU GPU access (provided by the supervisor) is an optional alternative. Local machines handle development and CPU-only work.
 
 ### Google Colab (GPU runs)
 1. Open [notebooks/colab_run.ipynb](notebooks/colab_run.ipynb) in Colab (*File → Open notebook → GitHub*, paste the repo URL).
